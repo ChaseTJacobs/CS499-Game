@@ -12,9 +12,10 @@ class Player(pygame.sprite.Sprite):
 	def __init__(self,pos,*groups):
 		super(Player,self).__init__(*groups)
 		self.pos = pos
-		self.image = pygame.Surface((150,150)).convert_alpha()
-		self.image.fill(TRANSPARENT)
-		pygame.draw.rect(self.image,(0,0,0),[50, 50, 50, 50])
+		self.image = pygame.Surface((30,30)).convert_alpha()
+		#self.image.fill(TRANSPARENT)
+		self.image.fill([0,0,0])
+		#pygame.draw.rect(self.image,(0,0,0),[20, 20, 20, 20])
 		self.rect = self.image.get_rect(center = self.pos)
 		self.mask = pygame.mask.from_surface(self.image)
 		self.move = [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]
@@ -37,13 +38,13 @@ class Player(pygame.sprite.Sprite):
 #			if(key[3] and !key[4]):
 				
 				
-		if key[32]:
-			print("Fire direction", self.direction)
-			self.vx = 1
-			self.vy = 1
-		else:				
-			self.vx = 5
-			self.vy = 5
+#		if key[32]:
+#			print("Fire direction", self.direction)
+#			self.vx = 1
+#			self.vy = 1
+#		else:				
+#			self.vx = 5
+#			self.vy = 5
 			
 	def set_direction(self,key):
 		print(key)
@@ -113,6 +114,8 @@ class Game:
 		for event in pygame.event.get():
 			key = pygame.key.get_pressed()
 			if key[32]:
+				print(self.player.rect.x)
+				print(self.player.rect.y)
 				Fireball((self.player.rect.x,self.player.rect.y), self.bullet_group)
 #			up = 273
 #			down = 274
