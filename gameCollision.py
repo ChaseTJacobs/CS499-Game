@@ -1,5 +1,6 @@
 import sys
 import pygame
+
 from random import *
 from math import pi
 
@@ -12,9 +13,17 @@ class Player(pygame.sprite.Sprite):
 	def __init__(self,pos,*groups):
 		super(Player,self).__init__(*groups)
 		self.pos = pos
-		self.image = pygame.Surface((30,30)).convert_alpha()
+		self.image = pygame.image.load("download.png")
+		self.mapping = {
+			"up": [(64 * i, 524, 64, 64) for i in range(0,9)],
+			"left": [(64 * i, 588, 64, 64) for i in range(0,9)],
+			"down": [(64 * i, 652, 64, 64) for i in range(0,9)],
+			"right": [(64 * i, 716, 64, 64) for i in range(0,9)],
+		}
+		self.facing = "up"
+		#self.image = pygame.Surface((30,30)).convert_alpha()
 		#self.image.fill(TRANSPARENT)
-		self.image.fill([0,0,0])
+		#self.image.fill([0,0,0])
 		#pygame.draw.rect(self.image,(0,0,0),[20, 20, 20, 20])
 		self.rect = self.image.get_rect(center = self.pos)
 		self.mask = pygame.mask.from_surface(self.image)
@@ -22,6 +31,8 @@ class Player(pygame.sprite.Sprite):
 		self.vx = 5
 		self.vy = 5
 		self.direction = 90
+		self.frame = 0
+		self.speed = 0
 
 	def movement(self,key):
 		#print(key)
@@ -32,6 +43,8 @@ class Player(pygame.sprite.Sprite):
 		for i in range(2):
 			if key[self.move[2:4][i]]:
 				self.rect.y += self.vy * [-1, 1][i]
+				
+		
 				
 #		if key[0]:
 #			self.fire_direction = 6
@@ -50,7 +63,8 @@ class Player(pygame.sprite.Sprite):
 		print(key)
 
 	def draw(self,surface):
-		surface.blit(self.image,self.rect)
+		self.frame = (self.frame + self.speed) % 9
+		surface.blit(self.image, (self.rect.x, self.rect.y, 200,100), self.mapping[self.facing][int(self.frame)])
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -94,7 +108,7 @@ class Fireball(pygame.sprite.Sprite):
 class Game:
 	def __init__(self):
 		self.screen = pygame.display.set_mode((800,600))
-		self.player = Player((150,150))
+		self.player = Player((500,800))
 		self.enemy_group = pygame.sprite.Group()
 		self.bullet_group = pygame.sprite.Group()
 		Enemy((300,250),self.enemy_group)
@@ -124,7 +138,9 @@ class Game:
 			if event.type == pygame.QUIT:
 				self.done = True
 			if event.type == pygame.KEYDOWN:
+				self.player.speed = 0.3
 				if event.key == pygame.K_LEFT:
+					self.player.facing = "left"
 					if key[273]:
 						self.player.direction = 315
 					elif key[274]:
@@ -132,6 +148,7 @@ class Game:
 					else:
 						self.player.direction = 270
 				elif event.key == pygame.K_RIGHT:
+					self.player.facing = "right"
 					if key[273]:
 						self.player.direction = 45
 					elif key[274]:
@@ -145,6 +162,7 @@ class Game:
 						self.player.direction = 315
 					else:
 						self.player.direction = 0
+						self.player.facing = "up"
 				elif event.key == pygame.K_DOWN:
 					if key[275]:
 						self.player.direction = 135
@@ -152,6 +170,19 @@ class Game:
 						self.player.direction = 225
 					else:
 						self.player.direction = 180
+						self.player.facing = "down"
+			elif event.type == pygame.KEYUP:
+				if not key[275] and not key[276]:
+					if key[273]:
+						self.player.facing = "up"
+						self.player.direction = 0
+					elif key[274]:
+						self.player.facing = "down"
+						self.player.direction = 180
+			
+			if not key[273] and not key[274] and not key[275] and not key[276]:
+				self.player.speed = 0
+				self.player.frame = 0
 
 	def check_collide(self):
 		if pygame.sprite.spritecollide(self.player,self.enemy_group,False,pygame.sprite.collide_mask):
