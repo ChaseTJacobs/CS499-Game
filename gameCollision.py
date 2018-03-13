@@ -119,7 +119,7 @@ class Game:
 		Enemy((100,450),self.enemy_group)
 		Enemy((700,400),self.enemy_group)
 		self.done = False
-		self.fps = 60.0
+		self.fps = 30.0
 		self.clock = pygame.time.Clock()
 
 	def event_loop(self):
