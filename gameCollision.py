@@ -43,22 +43,22 @@ class Player(pygame.sprite.Sprite):
 		for i in range(2):
 			if key[self.move[2:4][i]]:
 				self.rect.y += self.vy * [-1, 1][i]
-				
-		
-				
+
+
+
 #		if key[0]:
 #			self.fire_direction = 6
 #			if(key[3] and !key[4]):
-				
-				
+
+
 #		if key[32]:
 #			print("Fire direction", self.direction)
 #			self.vx = 1
 #			self.vy = 1
-#		else:				
+#		else:
 #			self.vx = 5
 #			self.vy = 5
-			
+
 	def set_direction(self,key):
 		print(key)
 
@@ -80,7 +80,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.slid_pos_y = 0
 		self.counterx = randint(1,5)
 		self.countery = randint(1,5)
-		
+
 	def draw(self, surface):
 		self.slid_pos_x += self.counterx
 		self.rect.x += self.counterx
@@ -88,9 +88,9 @@ class Enemy(pygame.sprite.Sprite):
 			self.counterx = self.counterx * -1
 		if self.slid_pos_x < -50:
 			self.counterx = self.counterx * -1
-		
+
 		surface.blit(self.image, self.rect)
-		
+
 class Fireball(pygame.sprite.Sprite):
 	def __init__(self,pos,*groups):
 		super(Fireball,self).__init__(*groups)
@@ -100,7 +100,7 @@ class Fireball(pygame.sprite.Sprite):
 		pygame.draw.circle(self.image,(255,0,0),(10,10),10)
 		self.rect = self.image.get_rect(center = self.pos)
 		self.mask = pygame.mask.from_surface(self.image)
-		
+
 	def draw(self, surface):
 		surface.blit(self.image, self.rect)
 
@@ -119,11 +119,11 @@ class Game:
 		Enemy((100,450),self.enemy_group)
 		Enemy((700,400),self.enemy_group)
 		self.done = False
-		self.fps = 60.0
+		self.fps = 30.0
 		self.clock = pygame.time.Clock()
 
 	def event_loop(self):
-		key = pygame.key.get_pressed() 
+		key = pygame.key.get_pressed()
 		self.player.movement(key)
 		for event in pygame.event.get():
 			key = pygame.key.get_pressed()
@@ -179,7 +179,7 @@ class Game:
 					elif key[274]:
 						self.player.facing = "down"
 						self.player.direction = 180
-			
+
 			if not key[273] and not key[274] and not key[275] and not key[276]:
 				self.player.speed = 0
 				self.player.frame = 0
