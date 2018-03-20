@@ -7,7 +7,8 @@ from math import pi
 
 TRANSPARENT = (0,0,0,0)
 BACKGROUND_COLOR = [255, 255, 255]
-
+HEIGHT = 900
+WIDTH = 900
 
 class Player(pygame.sprite.Sprite):
 	def __init__(self,pos,*groups):
@@ -95,6 +96,28 @@ class Fireball(pygame.sprite.Sprite):
 	def draw(self, surface):
 		surface.blit(self.image, self.rect)
 
+class Terrain(pygame.sprite.Sprite):
+	def __init__(self,pos,*groups):
+		super(Terrain,self).__init__(*groups)
+		self.terrain = pygame.image.load("terrain.png")
+		self.terrain_rect = self.terrain.get_rect()
+		self.terrain_x,self.terrain_y = pos
+		self.cropRect = (self.terrain_x, self.terrain_y, 32,32)
+		self.pos = pos
+		self.rect = self.terrain.get_rect(center = self.pos)
+		self.mapping = {
+			"moving-lava": [(32 * i, 160, 32, 32) for i in range(15,18)],
+			"left": [(64 * i, 588, 32, 32) for i in range(0,3)],
+			"down": [(64 * i, 652, 32, 32) for i in range(0,3)],
+			"right": [(64 * i, 716, 32, 32) for i in range(0,3)],
+		}
+		self.frame = 0
+		self.speed = .1
+		self.tile = "moving-lava"
+
+	def draw(self,surface):
+		self.frame = (self.frame + self.speed) % 3
+		surface.blit(self.terrain, self.cropRect,self.mapping[self.tile][int(self.frame)])
 
 class Game:
 	def __init__(self):
@@ -102,8 +125,16 @@ class Game:
 		self.player1 = Player((600,700))
 		self.player2 = Player((800, 900))
 		self.player2.move = [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]
+		self.background = pygame.sprite.Group()
 		self.enemy_group = pygame.sprite.Group()
 		self.bullet_group = pygame.sprite.Group()
+		Terrain((200, 400),self.background)
+		Terrain((232, 400),self.background)
+		Terrain((264, 400),self.background)
+		Terrain((296, 400),self.background)
+		Terrain((200, 432),self.background)
+		Terrain((200, 464),self.background)
+		Terrain((200, 496),self.background)
 		Enemy((300,250),self.enemy_group)
 		Enemy((100,100),self.enemy_group)
 		Enemy((500,400),self.enemy_group)
@@ -124,7 +155,7 @@ class Game:
 		for i in range(2):
 			if key[self.player1.move[2:4][i]]:
 				self.player1.rect.y += self.player1.vy * [-1, 1][i]
-				
+
 		for i in range(2):
 			if key[self.player2.move[i]]:
 				self.player2.rect.x += self.player2.vx * [-1, 1][i]
@@ -227,7 +258,7 @@ class Game:
 					elif key[115]:
 						self.player2.facing = "down"
 						self.player2.direction = 180
-						
+
 #			w 119 up
 #			a 97  left
 #			s 115 down
@@ -236,7 +267,7 @@ class Game:
 #			down = 274
 #			Right = 275
 #			left = 276
-				
+
 
 			for idx, k in enumerate(key):
 				if k != 0:
@@ -258,6 +289,8 @@ class Game:
 		self.screen.fill(BACKGROUND_COLOR)
 		self.player1.draw(self.screen)
 		self.player2.draw(self.screen)
+		for tile in self.background:
+			tile.draw(self.screen)
 		for cur_sprite in self.enemy_group:
 			cur_sprite.draw(self.screen)
 		for bullet in self.bullet_group:
