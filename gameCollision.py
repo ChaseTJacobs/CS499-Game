@@ -9,17 +9,20 @@ TRANSPARENT = (0,0,0,0)
 BACKGROUND_COLOR = [255, 255, 255]
 HEIGHT = 900
 WIDTH = 900
+RED = [255,0,0]
+BLUE = [0,0,255]
+GREEN = [0,255,0]
 
 class Player(pygame.sprite.Sprite):
-	def __init__(self,pos,*groups):
+	def __init__(self,pos,file_name,*groups):
 		super(Player,self).__init__(*groups)
 		self.pos = pos
-		self.image = pygame.image.load("download.png")
+		self.image = pygame.image.load(file_name)
 		self.mapping = {
-			"up": [(64 * i, 524, 64, 64) for i in range(0,9)],
-			"left": [(64 * i, 588, 64, 64) for i in range(0,9)],
-			"down": [(64 * i, 652, 64, 64) for i in range(0,9)],
-			"right": [(64 * i, 716, 64, 64) for i in range(0,9)],
+			"up": [(64 * i, 524, 64, 63) for i in range(0,9)],
+			"left": [(64 * i, 588, 64, 61) for i in range(0,9)],
+			"down": [(64 * i, 652, 64, 63) for i in range(0,9)],
+			"right": [(64 * i, 716, 64, 63) for i in range(0,9)],
 		}
 		self.facing = "up"
 		#self.image = pygame.Surface((30,30)).convert_alpha()
@@ -34,8 +37,6 @@ class Player(pygame.sprite.Sprite):
 		self.direction = 90
 		self.frame = 0
 		self.speed = 0
-
-
 
 #		if key[0]:
 #			self.fire_direction = 6
@@ -84,13 +85,14 @@ class Enemy(pygame.sprite.Sprite):
 		surface.blit(self.image, self.rect)
 
 class Fireball(pygame.sprite.Sprite):
-	def __init__(self,pos, direction, *groups):
+	def __init__(self,pos,color,direction, *groups):
 		super(Fireball,self).__init__(*groups)
 		self.pos = pos
 		self.direction = direction
+		self.color = color
 		self.image = pygame.Surface((20,20)).convert_alpha()
 		self.image.fill(TRANSPARENT)
-		pygame.draw.circle(self.image,(255,0,0),(10,10),10)
+		pygame.draw.circle(self.image,self.color,(10,10),10)
 		self.rect = self.image.get_rect(center = self.pos)
 		self.mask = pygame.mask.from_surface(self.image)
 		self.xDir = 0
@@ -124,10 +126,11 @@ class Fireball(pygame.sprite.Sprite):
 		surface.blit(self.image, self.rect)
 		
 class Fireball2(pygame.sprite.Sprite):
-	def __init__(self,pos, direction, *groups):
+	def __init__(self,pos,color,direction, *groups):
 		super(Fireball2,self).__init__(*groups)
 		self.pos = pos
 		self.direction = direction
+		self.color = color
 		self.image = pygame.Surface((20,20)).convert_alpha()
 		self.image.fill(TRANSPARENT)
 		pygame.draw.circle(self.image,(255,0,255),(10,10),10)
@@ -189,8 +192,8 @@ class Terrain(pygame.sprite.Sprite):
 class Game:
 	def __init__(self):
 		self.screen = pygame.display.set_mode((800,600))
-		self.player1 = Player((600,700))
-		self.player2 = Player((800, 900))
+		self.player1 = Player((600,700),"green_hair.png")
+		self.player2 = Player((800, 900), "white_hair.png")
 		self.player2.move = [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]
 		self.background = pygame.sprite.Group()
 		self.enemy_group = pygame.sprite.Group()
@@ -207,6 +210,12 @@ class Game:
 		self.done = False
 		self.fps = 30.0
 		self.clock = pygame.time.Clock()
+		pygame.mixer.music.load('backgroundMusic.ogg')
+		pygame.mixer.music.set_volume(0.4)
+		pygame.mixer.music.play()
+		self.swoosh = pygame.mixer.Sound('fireball.wav')
+		self.swoosh.set_volume(.7)
+
 
 	def event_loop(self):
 		key = pygame.key.get_pressed()
@@ -229,9 +238,11 @@ class Game:
 		for event in pygame.event.get():
 			key = pygame.key.get_pressed()
 			if key[32]:
-				Fireball((self.player1.rect.x + 32,self.player1.rect.y + 32),self.player1.direction,self.bullet_group1)
+				Fireball((self.player1.rect.x + 32,self.player1.rect.y + 32),RED,self.player1.direction,self.bullet_group1)
+				self.swoosh.play()
 			if key[113]:
-				Fireball2((self.player2.rect.x + 32,self.player2.rect.y + 32),self.player2.direction,self.bullet_group2)
+				Fireball2((self.player2.rect.x + 32,self.player2.rect.y + 32),BLUE,self.player2.direction,self.bullet_group2)
+				self.swoosh.play()
 #			up = 273
 #			down = 274
 #			Right = 275
@@ -393,4 +404,5 @@ if __name__ == '__main__':
 	pygame.init()
 	game = Game()
 	game.run()
+	pygame.mixer.music.stop()
 	pygame.quit()
