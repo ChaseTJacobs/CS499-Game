@@ -84,16 +84,83 @@ class Enemy(pygame.sprite.Sprite):
 		surface.blit(self.image, self.rect)
 
 class Fireball(pygame.sprite.Sprite):
-	def __init__(self,pos,*groups):
+	def __init__(self,pos, direction, *groups):
 		super(Fireball,self).__init__(*groups)
 		self.pos = pos
+		self.direction = direction
 		self.image = pygame.Surface((20,20)).convert_alpha()
 		self.image.fill(TRANSPARENT)
 		pygame.draw.circle(self.image,(255,0,0),(10,10),10)
 		self.rect = self.image.get_rect(center = self.pos)
 		self.mask = pygame.mask.from_surface(self.image)
+		self.xDir = 0
+		self.yDir = 0
+		
+		if self.direction == 0:
+			print("going up")
+			self.yDir = -15
+		elif self.direction == 45:
+			self.xDir = 11
+			self.yDir = -11
+		elif self.direction == 90:
+			self.xDir = 15
+		elif self.direction == 135:
+			self.xDir = 11
+			self.yDir = 11
+		elif self.direction == 180:
+			self.yDir = 15
+		elif self.direction == 225:
+			self.xDir = -11
+			self.yDir = 11
+		elif self.direction == 270:
+			self.xDir = -15
+		elif self.direction == 315:
+			self.xDir = -11
+			self.yDir = -11
 
 	def draw(self, surface):
+		self.rect.x += self.xDir
+		self.rect.y += self.yDir
+		surface.blit(self.image, self.rect)
+		
+class Fireball2(pygame.sprite.Sprite):
+	def __init__(self,pos, direction, *groups):
+		super(Fireball2,self).__init__(*groups)
+		self.pos = pos
+		self.direction = direction
+		self.image = pygame.Surface((20,20)).convert_alpha()
+		self.image.fill(TRANSPARENT)
+		pygame.draw.circle(self.image,(255,0,255),(10,10),10)
+		self.rect = self.image.get_rect(center = self.pos)
+		self.mask = pygame.mask.from_surface(self.image)
+		self.xDir = 0
+		self.yDir = 0
+		
+		if self.direction == 0:
+			print("going up")
+			self.yDir = -15
+		elif self.direction == 45:
+			self.xDir = 11
+			self.yDir = -11
+		elif self.direction == 90:
+			self.xDir = 15
+		elif self.direction == 135:
+			self.xDir = 11
+			self.yDir = 11
+		elif self.direction == 180:
+			self.yDir = 15
+		elif self.direction == 225:
+			self.xDir = -11
+			self.yDir = 11
+		elif self.direction == 270:
+			self.xDir = -15
+		elif self.direction == 315:
+			self.xDir = -11
+			self.yDir = -11
+
+	def draw(self, surface):
+		self.rect.x += self.xDir
+		self.rect.y += self.yDir
 		surface.blit(self.image, self.rect)
 
 class Terrain(pygame.sprite.Sprite):
@@ -127,7 +194,8 @@ class Game:
 		self.player2.move = [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]
 		self.background = pygame.sprite.Group()
 		self.enemy_group = pygame.sprite.Group()
-		self.bullet_group = pygame.sprite.Group()
+		self.bullet_group1 = pygame.sprite.Group()
+		self.bullet_group2 = pygame.sprite.Group()
 		Terrain((200, 400),self.background)
 		Terrain((232, 400),self.background)
 		Terrain((264, 400),self.background)
@@ -136,12 +204,6 @@ class Game:
 		Terrain((200, 464),self.background)
 		Terrain((200, 496),self.background)
 		Enemy((300,250),self.enemy_group)
-		Enemy((100,100),self.enemy_group)
-		Enemy((500,400),self.enemy_group)
-		Enemy((200,550),self.enemy_group)
-		Enemy((500,150),self.enemy_group)
-		Enemy((100,450),self.enemy_group)
-		Enemy((700,400),self.enemy_group)
 		self.done = False
 		self.fps = 30.0
 		self.clock = pygame.time.Clock()
@@ -167,9 +229,9 @@ class Game:
 		for event in pygame.event.get():
 			key = pygame.key.get_pressed()
 			if key[32]:
-				print(self.player1.rect.x)
-				print(self.player1.rect.y)
-				Fireball((self.player1.rect.x,self.player1.rect.y), self.bullet_group)
+				Fireball((self.player1.rect.x + 32,self.player1.rect.y + 32),self.player1.direction,self.bullet_group1)
+			if key[113]:
+				Fireball2((self.player2.rect.x + 32,self.player2.rect.y + 32),self.player2.direction,self.bullet_group2)
 #			up = 273
 #			down = 274
 #			Right = 275
@@ -251,6 +313,13 @@ class Game:
 					elif key[274]:
 						self.player1.facing = "down"
 						self.player1.direction = 180
+				if not key[273] and not key[274]:
+					if key[275]:
+						self.player1.facing = "right"
+						self.player1.direction = 90
+					elif key[276]:
+						self.player1.facing = "left"
+						self.player1.direction = 270
 				if not key[100] and not key[97]:
 					if key[119]:
 						self.player2.facing = "up"
@@ -258,6 +327,13 @@ class Game:
 					elif key[115]:
 						self.player2.facing = "down"
 						self.player2.direction = 180
+				if not key[119] and not key[115]:
+					if key[100]:
+						self.player2.facing = "right"
+						self.player2.direction = 90
+					elif key[97]:
+						self.player2.facing = "left"
+						self.player2.direction = 270
 
 #			w 119 up
 #			a 97  left
@@ -269,9 +345,9 @@ class Game:
 #			left = 276
 
 
-			for idx, k in enumerate(key):
-				if k != 0:
-					print(idx)
+#			for idx, k in enumerate(key):
+#				if k != 0:
+#					print(idx)
 
 			if not key[273] and not key[274] and not key[275] and not key[276]:
 				self.player1.speed = 0
@@ -282,7 +358,7 @@ class Game:
 
 	def check_collide(self):
 		if pygame.sprite.spritecollide(self.player1,self.enemy_group,False,pygame.sprite.collide_mask):
-			print("collide at: x: ", self.player1.rect.x, " y: ", self.player1.rect.y)
+#			print("collide at: x: ", self.player1.rect.x, " y: ", self.player1.rect.y)
 			return False
 
 	def draw(self):
@@ -293,8 +369,10 @@ class Game:
 			tile.draw(self.screen)
 		for cur_sprite in self.enemy_group:
 			cur_sprite.draw(self.screen)
-		for bullet in self.bullet_group:
+		for bullet in self.bullet_group1:
 			bullet.draw(self.screen)
+		for bullet2 in self.bullet_group2:
+			bullet2.draw(self.screen)
 
 	def run(self):
 #		joysticks = []
