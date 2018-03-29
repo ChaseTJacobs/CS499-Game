@@ -25,6 +25,8 @@ class Player(pygame.sprite.Sprite):
 			"right": [(64 * i, 716, 64, 63) for i in range(0,9)],
 		}
 		self.facing = "up"
+		self.fBallCD = 50
+		self.fBall = 50
 		#self.image = pygame.Surface((30,30)).convert_alpha()
 		#self.image.fill(TRANSPARENT)
 		#self.image.fill([255,0,0])
@@ -34,6 +36,8 @@ class Player(pygame.sprite.Sprite):
 		self.move = [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]
 		self.vx = 5
 		self.vy = 5
+		self.pushX = 0
+		self.pushY = 0
 		self.direction = 90
 		self.frame = 0
 		self.speed = 0
@@ -56,6 +60,24 @@ class Player(pygame.sprite.Sprite):
 
 	def draw(self,surface):
 		self.frame = (self.frame + self.speed) % 9
+		if self.pushX > 0:
+			self.pushX -= 1
+			if self.pushX < 0:
+				self.pushX = 0
+		if self.pushX < 0:
+			self.pushX += 1
+			if self.pushX > 0:
+				self.pushX = 0
+		if self.pushY > 0:
+			self.pushY -= 1
+			if self.pushY < 0:
+				self.pushY = 0
+		if self.pushY < 0:
+			self.pushY += 1
+			if self.pushY > 0:
+				self.pushY = 0
+		self.rect.x += self.pushX
+		self.rect.y += self.pushY
 		surface.blit(self.image, (self.rect.x, self.rect.y, 200,100), self.mapping[self.facing][int(self.frame)])
 		self.mask = pygame.mask.from_surface(self.image.subsurface(self.mapping[self.facing][int(self.frame)]))
 
@@ -196,7 +218,6 @@ class Game:
 		self.player2 = Player((800, 900), "white_hair.png")
 		self.player2.move = [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]
 		self.background = pygame.sprite.Group()
-		self.enemy_group = pygame.sprite.Group()
 		self.bullet_group1 = pygame.sprite.Group()
 		self.bullet_group2 = pygame.sprite.Group()
 		Terrain((200, 400),self.background)
@@ -206,7 +227,6 @@ class Game:
 		Terrain((200, 432),self.background)
 		Terrain((200, 464),self.background)
 		Terrain((200, 496),self.background)
-		Enemy((300,250),self.enemy_group)
 		self.done = False
 		self.fps = 30.0
 		self.clock = pygame.time.Clock()
@@ -237,11 +257,13 @@ class Game:
 
 		for event in pygame.event.get():
 			key = pygame.key.get_pressed()
-			if key[32]:
+			if key[32] and self.player1.fBall >= self.player1.fBallCD:
 				Fireball((self.player1.rect.x + 32,self.player1.rect.y + 32),RED,self.player1.direction,self.bullet_group1)
+				self.player1.fBall = 0
 				self.swoosh.play()
-			if key[113]:
+			if key[304] and self.player2.fBall >= self.player2.fBallCD:
 				Fireball2((self.player2.rect.x + 32,self.player2.rect.y + 32),BLUE,self.player2.direction,self.bullet_group2)
+				self.player2.fBall = 0
 				self.swoosh.play()
 #			up = 273
 #			down = 274
@@ -368,18 +390,23 @@ class Game:
 				self.player2.frame = 0
 
 	def check_collide(self):
-		if pygame.sprite.spritecollide(self.player1,self.enemy_group,False,pygame.sprite.collide_mask):
-#			print("collide at: x: ", self.player1.rect.x, " y: ", self.player1.rect.y)
+		p1Col = pygame.sprite.spritecollide(self.player1,self.bullet_group2,True,pygame.sprite.collide_mask)
+		if p1Col:
+			self.player1.pushX = p1Col[0].xDir
+			self.player1.pushY = p1Col[0].yDir
+			return False
+		p2Col = pygame.sprite.spritecollide(self.player2,self.bullet_group1,True,pygame.sprite.collide_mask)
+		if p2Col:
+			self.player2.pushX = p2Col[0].xDir
+			self.player2.pushY = p2Col[0].yDir
 			return False
 
 	def draw(self):
 		self.screen.fill(BACKGROUND_COLOR)
 		self.player1.draw(self.screen)
 		self.player2.draw(self.screen)
-		for tile in self.background:
-			tile.draw(self.screen)
-		for cur_sprite in self.enemy_group:
-			cur_sprite.draw(self.screen)
+#		for tile in self.background:
+#			tile.draw(self.screen)
 		for bullet in self.bullet_group1:
 			bullet.draw(self.screen)
 		for bullet2 in self.bullet_group2:
@@ -393,6 +420,8 @@ class Game:
 #			print (joysticks[-1].get_name())
 		while not self.done:
 			self.event_loop()
+			self.player1.fBall += 1
+			self.player2.fBall += 1
 			self.draw()
 			if self.check_collide():
 				self.done = True
