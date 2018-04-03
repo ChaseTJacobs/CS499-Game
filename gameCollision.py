@@ -25,8 +25,11 @@ class Player(pygame.sprite.Sprite):
 			"right": [(64 * i, 716, 64, 63) for i in range(0,9)],
 		}
 		self.facing = "up"
-		self.fBallCD = 50
+		self.fBallCD = 25
 		self.fBall = 50
+		self.teleDistance = 75
+		self.tele = 101
+		self.teleCD = 100
 		#self.image = pygame.Surface((30,30)).convert_alpha()
 		#self.image.fill(TRANSPARENT)
 		#self.image.fill([255,0,0])
@@ -34,26 +37,36 @@ class Player(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect(center = self.pos)
 		self.mask = pygame.mask.from_surface(self.image)
 		self.move = [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]
-		self.vx = 5
-		self.vy = 5
+		self.vx = 4
+		self.vy = 4
 		self.pushX = 0
 		self.pushY = 0
 		self.direction = 90
 		self.frame = 0
 		self.speed = 0
 
-#		if key[0]:
-#			self.fire_direction = 6
-#			if(key[3] and !key[4]):
-
-
-#		if key[32]:
-#			print("Fire direction", self.direction)
-#			self.vx = 1
-#			self.vy = 1
-#		else:
-#			self.vx = 5
-#			self.vy = 5
+	def teleport(self):
+		self.tele = 0
+		if self.direction == 0:
+			self.rect.y -= self.teleDistance
+		elif self.direction == 45:
+			self.rect.x += self.teleDistance * .75
+			self.rect.y -= self.teleDistance * .75
+		elif self.direction == 90:
+			self.rect.x += self.teleDistance
+		elif self.direction == 135:
+			self.rect.x += self.teleDistance * .75
+			self.rect.y += self.teleDistance * .75
+		elif self.direction == 180:
+			self.rect.y += self.teleDistance
+		elif self.direction == 225:
+			self.rect.x -= self.teleDistance * .75
+			self.rect.y += self.teleDistance * .75
+		elif self.direction == 270:
+			self.rect.x -= self.teleDistance
+		elif self.direction == 315:
+			self.rect.x -= self.teleDistance * .75
+			self.rect.y -= self.teleDistance * .75
 
 	def set_direction(self,key):
 		print(key)
@@ -61,19 +74,19 @@ class Player(pygame.sprite.Sprite):
 	def draw(self,surface):
 		self.frame = (self.frame + self.speed) % 9
 		if self.pushX > 0:
-			self.pushX -= 1
+			self.pushX -= .5
 			if self.pushX < 0:
 				self.pushX = 0
 		if self.pushX < 0:
-			self.pushX += 1
+			self.pushX += .5
 			if self.pushX > 0:
 				self.pushX = 0
 		if self.pushY > 0:
-			self.pushY -= 1
+			self.pushY -= .5
 			if self.pushY < 0:
 				self.pushY = 0
 		if self.pushY < 0:
-			self.pushY += 1
+			self.pushY += .5
 			if self.pushY > 0:
 				self.pushY = 0
 		self.rect.x += self.pushX
@@ -121,7 +134,6 @@ class Fireball(pygame.sprite.Sprite):
 		self.yDir = 0
 		
 		if self.direction == 0:
-			print("going up")
 			self.yDir = -15
 		elif self.direction == 45:
 			self.xDir = 11
@@ -162,7 +174,6 @@ class Fireball2(pygame.sprite.Sprite):
 		self.yDir = 0
 		
 		if self.direction == 0:
-			print("going up")
 			self.yDir = -15
 		elif self.direction == 45:
 			self.xDir = 11
@@ -259,12 +270,21 @@ class Game:
 			key = pygame.key.get_pressed()
 			if key[32] and self.player1.fBall >= self.player1.fBallCD:
 				Fireball((self.player1.rect.x + 32,self.player1.rect.y + 32),RED,self.player1.direction,self.bullet_group1)
+				print("x: ", self.player1.rect.x)
+				print("y: ", self.player1.rect.y)
 				self.player1.fBall = 0
 				self.swoosh.play()
 			if key[304] and self.player2.fBall >= self.player2.fBallCD:
 				Fireball2((self.player2.rect.x + 32,self.player2.rect.y + 32),BLUE,self.player2.direction,self.bullet_group2)
 				self.player2.fBall = 0
 				self.swoosh.play()
+			if key[109] and self.player1.tele > self.player1.teleCD:
+				self.player1.teleport()
+			if key[122] and self.player2.tele > self.player2.teleCD:
+				self.player2.teleport()	
+				
+#			m = 109
+#			z = 122
 #			up = 273
 #			down = 274
 #			Right = 275
@@ -413,15 +433,12 @@ class Game:
 			bullet2.draw(self.screen)
 
 	def run(self):
-#		joysticks = []
-#		for i in range(0, pygame.joystick.get_count()):
-#			joysticks.append(pygame.joystick.Joystick(i))
-#			joysticks[-1].init()
-#			print (joysticks[-1].get_name())
 		while not self.done:
 			self.event_loop()
 			self.player1.fBall += 1
 			self.player2.fBall += 1
+			self.player1.tele += 1
+			self.player2.tele += 1
 			self.draw()
 			if self.check_collide():
 				self.done = True
