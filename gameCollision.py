@@ -8,7 +8,7 @@ from math import pi
 TRANSPARENT = (0,0,0,0)
 BACKGROUND_COLOR = [255, 255, 255]
 HEIGHT = 900
-WIDTH = 900
+WIDTH = 1200
 RED = [255,0,0]
 BLUE = [0,0,255]
 GREEN = [0,255,0]
@@ -132,7 +132,7 @@ class Fireball(pygame.sprite.Sprite):
 		self.mask = pygame.mask.from_surface(self.image)
 		self.xDir = 0
 		self.yDir = 0
-		
+
 		if self.direction == 0:
 			self.yDir = -15
 		elif self.direction == 45:
@@ -158,7 +158,7 @@ class Fireball(pygame.sprite.Sprite):
 		self.rect.x += self.xDir
 		self.rect.y += self.yDir
 		surface.blit(self.image, self.rect)
-		
+
 class Fireball2(pygame.sprite.Sprite):
 	def __init__(self,pos,color,direction, *groups):
 		super(Fireball2,self).__init__(*groups)
@@ -172,7 +172,7 @@ class Fireball2(pygame.sprite.Sprite):
 		self.mask = pygame.mask.from_surface(self.image)
 		self.xDir = 0
 		self.yDir = 0
-		
+
 		if self.direction == 0:
 			self.yDir = -15
 		elif self.direction == 45:
@@ -202,14 +202,14 @@ class Fireball2(pygame.sprite.Sprite):
 class Terrain(pygame.sprite.Sprite):
 	def __init__(self,pos,*groups):
 		super(Terrain,self).__init__(*groups)
-		self.terrain = pygame.image.load("terrain.png")
+		self.terrain = pygame.image.load("biglava.png")
 		self.terrain_rect = self.terrain.get_rect()
 		self.terrain_x,self.terrain_y = pos
 		self.cropRect = (self.terrain_x, self.terrain_y, 32,32)
 		self.pos = pos
 		self.rect = self.terrain.get_rect(center = self.pos)
 		self.mapping = {
-			"moving-lava": [(32 * i, 160, 32, 32) for i in range(15,18)],
+			"moving-lava": [(50 * i, 0, 50, 152) for i in range(0,3)],
 			"left": [(64 * i, 588, 32, 32) for i in range(0,3)],
 			"down": [(64 * i, 652, 32, 32) for i in range(0,3)],
 			"right": [(64 * i, 716, 32, 32) for i in range(0,3)],
@@ -224,7 +224,7 @@ class Terrain(pygame.sprite.Sprite):
 
 class Game:
 	def __init__(self):
-		self.screen = pygame.display.set_mode((800,600))
+		self.screen = pygame.display.set_mode((WIDTH,HEIGHT))
 		self.player1 = Player((600,700),"green_hair.png")
 		self.player2 = Player((800, 900), "white_hair.png")
 		self.player2.move = [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]
@@ -425,8 +425,8 @@ class Game:
 		self.screen.fill(BACKGROUND_COLOR)
 		self.player1.draw(self.screen)
 		self.player2.draw(self.screen)
-#		for tile in self.background:
-#			tile.draw(self.screen)
+		for tile in self.background:
+			tile.draw(self.screen)
 		for bullet in self.bullet_group1:
 			bullet.draw(self.screen)
 		for bullet2 in self.bullet_group2:
