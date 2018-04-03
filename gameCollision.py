@@ -8,7 +8,7 @@ from math import pi
 TRANSPARENT = (0,0,0,0)
 BACKGROUND_COLOR = [255, 255, 255]
 HEIGHT = 900
-WIDTH = 900
+WIDTH = 1200
 RED = [255,0,0]
 BLUE = [0,0,255]
 GREEN = [0,255,0]
@@ -213,7 +213,7 @@ class Terrain(pygame.sprite.Sprite):
 
 class Game:
 	def __init__(self):
-		self.screen = pygame.display.set_mode((800,600))
+		self.screen = pygame.display.set_mode((WIDTH,HEIGHT))
 		self.player1 = Player((600,700),"green_hair.png")
 		self.player2 = Player((800, 900), "white_hair.png")
 		self.player2.move = [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]
@@ -405,8 +405,8 @@ class Game:
 		self.screen.fill(BACKGROUND_COLOR)
 		self.player1.draw(self.screen)
 		self.player2.draw(self.screen)
-#		for tile in self.background:
-#			tile.draw(self.screen)
+		for tile in self.background:
+			tile.draw(self.screen)
 		for bullet in self.bullet_group1:
 			bullet.draw(self.screen)
 		for bullet2 in self.bullet_group2:
