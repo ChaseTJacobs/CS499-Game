@@ -425,8 +425,8 @@ class Game:
 		self.screen.fill(BACKGROUND_COLOR)
 		self.player1.draw(self.screen)
 		self.player2.draw(self.screen)
-		for tile in self.background:
-			tile.draw(self.screen)
+#		for tile in self.background:
+#			tile.draw(self.screen)
 		for bullet in self.bullet_group1:
 			bullet.draw(self.screen)
 		for bullet2 in self.bullet_group2:
