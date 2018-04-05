@@ -7,11 +7,13 @@ from math import pi
 
 TRANSPARENT = (0,0,0,0)
 BACKGROUND_COLOR = [255, 255, 255]
-HEIGHT = 600
+HEIGHT = 740
 WIDTH = 800
 RED = [255,0,0]
 BLUE = [0,0,255]
 GREEN = [0,255,0]
+
+screen = pygame.display.set_mode((WIDTH, HEIGHT), 0, 32)
 
 class Player(pygame.sprite.Sprite):
 	def __init__(self,pos,file_name,*groups):
@@ -30,6 +32,7 @@ class Player(pygame.sprite.Sprite):
 		self.teleDistance = 75
 		self.tele = 101
 		self.teleCD = 100
+		self.health = 100
 		#self.image = pygame.Surface((30,30)).convert_alpha()
 		#self.image.fill(TRANSPARENT)
 		#self.image.fill([255,0,0])
@@ -93,31 +96,6 @@ class Player(pygame.sprite.Sprite):
 		self.rect.y += self.pushY
 		surface.blit(self.image, (self.rect.x, self.rect.y, 200,100), self.mapping[self.facing][int(self.frame)])
 		self.mask = pygame.mask.from_surface(self.image.subsurface(self.mapping[self.facing][int(self.frame)]))
-
-
-class Enemy(pygame.sprite.Sprite):
-	def __init__(self,pos,*groups):
-		super(Enemy,self).__init__(*groups)
-		self.pos = pos
-		self.image = pygame.Surface((100,100)).convert_alpha()
-		self.image.fill(TRANSPARENT)
-		pygame.draw.circle(self.image,(255,255,0),(30,30),30)
-		self.rect = self.image.get_rect(center = self.pos)
-		self.mask = pygame.mask.from_surface(self.image)
-		self.slid_pos_x = 0
-		self.slid_pos_y = 0
-		self.counterx = randint(1,5)
-		self.countery = randint(1,5)
-
-	def draw(self, surface):
-		self.slid_pos_x += self.counterx
-		self.rect.x += self.counterx
-		if self.slid_pos_x > 50:
-			self.counterx = self.counterx * -1
-		if self.slid_pos_x < -50:
-			self.counterx = self.counterx * -1
-
-		surface.blit(self.image, self.rect)
 
 class Fireball(pygame.sprite.Sprite):
 	def __init__(self,pos,color,direction, *groups):
@@ -199,41 +177,42 @@ class Fireball2(pygame.sprite.Sprite):
 		self.rect.y += self.yDir
 		surface.blit(self.image, self.rect)
 
-class Terrain(pygame.sprite.Sprite):
-	def __init__(self,pos,*groups):
-		super(Terrain,self).__init__(*groups)
-		self.terrain = pygame.image.load("biglava.png")
-		self.terrain_rect = self.terrain.get_rect()
-		self.terrain_x,self.terrain_y = pos
-		self.cropRect = (self.terrain_x, self.terrain_y, 32,32)
-		self.pos = pos
-		self.rect = self.terrain.get_rect(center = self.pos)
-		self.mapping = {
-			"moving-lava": [(50 * i, 0, 50, 152) for i in range(0,3)],
-			"left": [(64 * i, 588, 32, 32) for i in range(0,3)],
-			"down": [(64 * i, 652, 32, 32) for i in range(0,3)],
-			"right": [(64 * i, 716, 32, 32) for i in range(0,3)],
-		}
-		self.frame = 0
-		self.speed = .1
-		self.tile = "moving-lava"
 
-	def draw(self,surface):
-		self.frame = (self.frame + self.speed) % 3
-		surface.blit(self.terrain, self.cropRect,self.mapping[self.tile][int(self.frame)])
 
 class Game:
 	def __init__(self):
+		#initializing the display screen and establishing two surfaces: one for playing and
+		#one for player stats and information
 		self.screen = pygame.display.set_mode((WIDTH,HEIGHT), 0, 32)
+		self.arena = pygame.surface.Surface((WIDTH, HEIGHT - 100))
+		self.stats = pygame.surface.Surface((WIDTH, 100))
+		for x in range(800):
+			c = int((x/799.)*255.)
+			red = (c, 0, 0)
+			green = (0, c, 0)
+			blue = (0, 0, c)
+			gray = (127,127,127)
+			line_rect = Rect(x, 0, 1, 100)
+			pygame.draw.rect(self.arena, red, line_rect)
+			pygame.draw.rect(self.stats, gray, line_rect)
+
+		#setting up the sprites that we are going to use as our players
 		self.player1 = Player((600,700),"green_hair.png")
 		self.player2 = Player((800, 900), "white_hair.png")
 		self.player2.move = [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]
-		self.background = pygame.image.load("lava-block.png").convert()
+
+		#setting the background and creating an inverted mask of the paths
+		self.background = pygame.image.load("lava-terrain.png").convert()
+		self.gravel_path = pygame.image.load("gravel-path.png").convert()
+		self.terrain_mask = pygame.mask.from_surface(self.gravel_path).invert()
+
 		self.bullet_group1 = pygame.sprite.Group()
 		self.bullet_group2 = pygame.sprite.Group()
 		self.done = False
 		self.fps = 30.0
 		self.clock = pygame.time.Clock()
+
+		#adding some tunes to the game so it's not so boring
 		pygame.mixer.music.load('backgroundMusic.ogg')
 		pygame.mixer.music.set_volume(0.4)
 		pygame.mixer.music.play()
@@ -414,13 +393,26 @@ class Game:
 			self.player2.pushY = p2Col[0].yDir
 			return False
 
+		# if (pygame.sprite.collide_mask(self.player1,self.terrain_mask)):
+		# 	self.player1.health -= 2
+		# 	if self.player1.health > 0:
+		# 		return False
+		# 	elif self.player1.health <= 0:
+		# 		return True
+		# elif(pygame.sprite.collide_mask(self.player2,self.terrain_mask)):
+		# 	self.player2.health -= 2
+		# 	if self.player2.health > 0:
+		# 		return False
+		# 	elif self.player2.health <= 0:
+		# 		return True
+
+
 	def draw(self):
-		# self.screen.fill(BACKGROUND_COLOR)
-		self.screen.blit(self.background, (0,0))
+		self.screen.blit(self.arena, (0, 00))
+		self.screen.blit(self.stats, (0, HEIGHT - 100))
+		self.arena.blit(self.background, (0,0))
 		self.player1.draw(self.screen)
 		self.player2.draw(self.screen)
-#		for tile in self.background:
-#			tile.draw(self.screen)
 		for bullet in self.bullet_group1:
 			bullet.draw(self.screen)
 		for bullet2 in self.bullet_group2:
