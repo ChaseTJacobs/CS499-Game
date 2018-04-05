@@ -186,15 +186,19 @@ class Game:
 		self.screen = pygame.display.set_mode((WIDTH,HEIGHT), 0, 32)
 		self.arena = pygame.surface.Surface((WIDTH, HEIGHT - 100))
 		self.stats = pygame.surface.Surface((WIDTH, 100))
-		for x in range(800):
-			c = int((x/799.)*255.)
+		for x in range(200):
+			c = int((x/199.)*255.)
 			red = (c, 0, 0)
 			green = (0, c, 0)
 			blue = (0, 0, c)
-			gray = (127,127,127)
+			black = (0,0,0)
+			player1_health = Rect(x, 0, 200, 40)
+			player2_health = Rect(400+x, 0, 200, 40)
 			line_rect = Rect(x, 0, 1, 100)
-			pygame.draw.rect(self.arena, red, line_rect)
-			pygame.draw.rect(self.stats, gray, line_rect)
+			# pygame.draw.rect(self.arena, red, line_rect)
+			pygame.draw.rect(self.stats, black, line_rect)
+			pygame.draw.rect(self.stats, green, player1_health)
+			pygame.draw.rect(self.stats, blue, player2_health)
 
 		#setting up the sprites that we are going to use as our players
 		self.player1 = Player((600,700),"green_hair.png")
