@@ -7,8 +7,8 @@ from math import pi
 
 TRANSPARENT = (0,0,0,0)
 BACKGROUND_COLOR = [255, 255, 255]
-HEIGHT = 900
-WIDTH = 1200
+HEIGHT = 600
+WIDTH = 800
 RED = [255,0,0]
 BLUE = [0,0,255]
 GREEN = [0,255,0]
@@ -67,6 +67,7 @@ class Player(pygame.sprite.Sprite):
 		elif self.direction == 315:
 			self.rect.x -= self.teleDistance * .75
 			self.rect.y -= self.teleDistance * .75
+		return (self.rect.x, self.rect.y)
 
 	def set_direction(self,key):
 		print(key)
@@ -158,6 +159,16 @@ class Fireball(pygame.sprite.Sprite):
 		self.rect.x += self.xDir
 		self.rect.y += self.yDir
 		surface.blit(self.image, self.rect)
+		surface.blit(self.image, self.rect)
+		if self.rect.x < -20:
+			return True
+		if self.rect.x > WIDTH + 20:
+			return True
+		if self.rect.y < -20:
+			return True
+		if self.rect.y > HEIGHT + 20:
+			return True
+		return False
 
 class Fireball2(pygame.sprite.Sprite):
 	def __init__(self,pos,color,direction, *groups):
@@ -198,6 +209,15 @@ class Fireball2(pygame.sprite.Sprite):
 		self.rect.x += self.xDir
 		self.rect.y += self.yDir
 		surface.blit(self.image, self.rect)
+		if self.rect.x < -20:
+			return True
+		if self.rect.x > WIDTH + 20:
+			return True
+		if self.rect.y < -20:
+			return True
+		if self.rect.y > HEIGHT + 20:
+			return True
+		return False
 
 class Terrain(pygame.sprite.Sprite):
 	def __init__(self,pos,*groups):
@@ -279,7 +299,11 @@ class Game:
 				self.player2.fBall = 0
 				self.swoosh.play()
 			if key[109] and self.player1.tele > self.player1.teleCD:
-				self.player1.teleport()
+				tempX = self.player1.rect.x + 32
+				tempY = self.player1.rect.y + 32
+				newXY = self.player1.teleport()
+				pygame.draw.line(self.screen, BLUE, (tempX,tempY), (newXY[0] + 32, newXY[1] + 32), 3)
+				pygame.display.update()
 			if key[122] and self.player2.tele > self.player2.teleCD:
 				self.player2.teleport()	
 				
@@ -428,9 +452,11 @@ class Game:
 #		for tile in self.background:
 #			tile.draw(self.screen)
 		for bullet in self.bullet_group1:
-			bullet.draw(self.screen)
+			if bullet.draw(self.screen):
+				bullet.kill()
 		for bullet2 in self.bullet_group2:
-			bullet2.draw(self.screen)
+			if bullet2.draw(self.screen):
+				bullet2.kill()
 
 	def run(self):
 		while not self.done:
