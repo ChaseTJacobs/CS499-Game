@@ -1,14 +1,14 @@
 import sys
 import pygame
-
+from pygame.locals import *
 from random import *
 from math import pi
 
 
 TRANSPARENT = (0,0,0,0)
 BACKGROUND_COLOR = [255, 255, 255]
-HEIGHT = 900
-WIDTH = 1200
+HEIGHT = 600
+WIDTH = 800
 RED = [255,0,0]
 BLUE = [0,0,255]
 GREEN = [0,255,0]
@@ -224,20 +224,13 @@ class Terrain(pygame.sprite.Sprite):
 
 class Game:
 	def __init__(self):
-		self.screen = pygame.display.set_mode((WIDTH,HEIGHT))
+		self.screen = pygame.display.set_mode((WIDTH,HEIGHT), 0, 32)
 		self.player1 = Player((600,700),"green_hair.png")
 		self.player2 = Player((800, 900), "white_hair.png")
 		self.player2.move = [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]
-		self.background = pygame.sprite.Group()
+		self.background = pygame.image.load("lava-block.png").convert()
 		self.bullet_group1 = pygame.sprite.Group()
 		self.bullet_group2 = pygame.sprite.Group()
-		Terrain((200, 400),self.background)
-		Terrain((232, 400),self.background)
-		Terrain((264, 400),self.background)
-		Terrain((296, 400),self.background)
-		Terrain((200, 432),self.background)
-		Terrain((200, 464),self.background)
-		Terrain((200, 496),self.background)
 		self.done = False
 		self.fps = 30.0
 		self.clock = pygame.time.Clock()
@@ -281,8 +274,8 @@ class Game:
 			if key[109] and self.player1.tele > self.player1.teleCD:
 				self.player1.teleport()
 			if key[122] and self.player2.tele > self.player2.teleCD:
-				self.player2.teleport()	
-				
+				self.player2.teleport()
+
 #			m = 109
 #			z = 122
 #			up = 273
@@ -422,7 +415,8 @@ class Game:
 			return False
 
 	def draw(self):
-		self.screen.fill(BACKGROUND_COLOR)
+		# self.screen.fill(BACKGROUND_COLOR)
+		self.screen.blit(self.background, (0,0))
 		self.player1.draw(self.screen)
 		self.player2.draw(self.screen)
 #		for tile in self.background:
