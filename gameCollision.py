@@ -426,7 +426,6 @@ class Game:
 			self.player2.pushY = p2Col[0].yDir
 			
 		p1Ter = pygame.sprite.collide_mask(self.terrain,self.player1)
-		print("player1 ",p1Ter)
 		if p1Ter:
 			self.player1.health += .01
 		else:
@@ -435,7 +434,6 @@ class Game:
 				dead = True
 		
 		p2Ter = pygame.sprite.collide_mask(self.terrain,self.player2)
-		print("player2 ",p2Ter)
 		if p2Ter:
 			self.player2.health += .01
 		else:
