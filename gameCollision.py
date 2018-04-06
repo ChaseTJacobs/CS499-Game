@@ -32,7 +32,7 @@ class Player(pygame.sprite.Sprite):
 		self.teleDistance = 75
 		self.tele = 101
 		self.teleCD = 100
-		self.health = 100
+		self.health = 200
 		self.rect = self.image.get_rect(center = self.pos)
 		self.mask = pygame.mask.from_surface(self.image)
 		self.move = [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]
@@ -197,13 +197,12 @@ class Terrain(pygame.sprite.Sprite):
 	def __init__(self,pos,*groups):
 		super(Terrain,self).__init__(*groups)
 		self.pos = pos
-		self.image = pygame.image.load("lava-terrain.png").convert()
-		self.gravel_path = pygame.image.load("gravel-path.png").convert()
+		self.image = pygame.image.load("lava-terrain.png")
+		self.gravel_path = pygame.image.load("gravel-path.png")
 		self.mask = pygame.mask.from_surface(self.gravel_path)
+		self.rect = (0,0, WIDTH, HEIGHT - 100)
 		self.arena = pygame.surface.Surface((WIDTH, HEIGHT - 100))
 		self.stats = pygame.surface.Surface((WIDTH, 100))
-		
-		self.rect = self.image.get_rect(center = self.pos)
 	def draw(self, surface):
 		surface.blit(self.arena, (0, 00))
 		surface.blit(self.stats, (0, HEIGHT - 100))
@@ -416,31 +415,34 @@ class Game:
 				self.player2.frame = 0
 
 	def check_collide(self):
+		dead = False
 		p1Col = pygame.sprite.spritecollide(self.player1,self.bullet_group2,True,pygame.sprite.collide_mask)
 		if p1Col:
 			self.player1.pushX = p1Col[0].xDir
 			self.player1.pushY = p1Col[0].yDir
-			return False
 		p2Col = pygame.sprite.spritecollide(self.player2,self.bullet_group1,True,pygame.sprite.collide_mask)
 		if p2Col:
 			self.player2.pushX = p2Col[0].xDir
 			self.player2.pushY = p2Col[0].yDir
-			return False
-
-		if (pygame.sprite.collide_mask(self.player1,self.terrain)):
-			print("p1collide")
-			self.player1.health -= 2
-			if self.player1.health > 0:
-				return False
-			elif self.player1.health <= 0:
-				return True
-		if(pygame.sprite.collide_mask(self.player2,self.terrain)):
-			print("p2collide")
-			self.player2.health -= 2
-			if self.player2.health > 0:
-				return False
-			elif self.player2.health <= 0:
-				return True
+			
+		p1Ter = pygame.sprite.collide_mask(self.terrain,self.player1)
+		print("player1 ",p1Ter)
+		if p1Ter:
+			self.player1.health += .01
+		else:
+			self.player1.health -= 1
+			if self.player1.health <= 0:
+				dead = True
+		
+		p2Ter = pygame.sprite.collide_mask(self.terrain,self.player2)
+		print("player2 ",p2Ter)
+		if p2Ter:
+			self.player2.health += .01
+		else:
+			self.player2.health -= 1
+			if self.player2.health <= 0:
+				dead = True
+		return dead
 
 
 	def draw(self):
@@ -453,6 +455,9 @@ class Game:
 		for bullet2 in self.bullet_group2:
 			if bullet2.draw(self.screen):
 				bullet2.kill()
+		pygame.draw.rect(self.screen, BLUE, (100,677,self.player1.health,25))
+		pygame.draw.rect(self.screen, RED, (500,677,self.player2.health,25))
+		
 
 	def run(self):
 		while not self.done:
