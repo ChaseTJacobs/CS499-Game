@@ -18,7 +18,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT), 0, 32)
 class Player(pygame.sprite.Sprite):
 	def __init__(self,pos,file_name,*groups):
 		super(Player,self).__init__(*groups)
-		self.x,self.y = pos
+		self.pos = pos
 		self.image = pygame.image.load(file_name)
 		self.mapping = {
 			"up": [(64 * i, 524, 64, 63) for i in range(0,9)],
@@ -33,7 +33,7 @@ class Player(pygame.sprite.Sprite):
 		self.tele = 101
 		self.teleCD = 100
 		self.health = 200
-		self.rect = self.image.get_rect(center = (self.x,self.y))
+		self.rect = self.image.get_rect(center = (self.pos))
 		self.mask = pygame.mask.from_surface(self.image)
 		self.move = [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]
 		self.vx = 4
@@ -205,8 +205,11 @@ class Terrain(pygame.sprite.Sprite):
 		self.stats = pygame.surface.Surface((WIDTH, 100))
 	def draw(self, surface):
 		surface.blit(self.arena, (0, 00))
-		surface.blit(self.stats, (0, HEIGHT - 100))
 		surface.blit(self.image, (0,0))
+
+	def drawStats(self, surface):
+		surface.blit(self.stats, (0, HEIGHT - 100))
+
 
 class Game:
 	def __init__(self):
@@ -447,14 +450,13 @@ class Game:
 		self.terrain.draw(self.screen)
 		self.player1.draw(self.screen)
 		self.player2.draw(self.screen)
-		# self.player1.rect.clamp_ip(self.screen.get_rect())
-		# self.player2.rect.clamp_ip(self.screen.get_rect())
 		for bullet in self.bullet_group1:
 			if bullet.draw(self.screen):
 				bullet.kill()
 		for bullet2 in self.bullet_group2:
 			if bullet2.draw(self.screen):
 				bullet2.kill()
+		self.terrain.drawStats(self.screen)
 		pygame.draw.rect(self.screen, BLUE, (100,700,self.player1.health,25))
 		pygame.draw.rect(self.screen, RED, (500,700,self.player2.health,25))
 		screen.blit(self.p1text, (50, 667))
