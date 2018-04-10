@@ -213,7 +213,7 @@ class Game:
 		#initializing the display screen and establishing two surfaces: one for playing and
 		#one for player stats and information
 		self.screen = pygame.display.set_mode((WIDTH,HEIGHT), 0, 32)
-		
+
 #		for x in range(800):
 #			c = int((x/799.)*255.)
 #			red = (c, 0, 0)
@@ -423,7 +423,7 @@ class Game:
 		if p2Col:
 			self.player2.pushX = p2Col[0].xDir
 			self.player2.pushY = p2Col[0].yDir
-			
+
 		p1Ter = pygame.sprite.collide_mask(self.terrain,self.player1)
 		if p1Ter:
 			self.player1.health += .01
@@ -431,7 +431,7 @@ class Game:
 			self.player1.health -= 1
 			if self.player1.health <= 0:
 				dead = True
-		
+
 		p2Ter = pygame.sprite.collide_mask(self.terrain,self.player2)
 		if p2Ter:
 			self.player2.health += .01
@@ -454,7 +454,7 @@ class Game:
 				bullet2.kill()
 		pygame.draw.rect(self.screen, BLUE, (100,677,self.player1.health,25))
 		pygame.draw.rect(self.screen, RED, (500,677,self.player2.health,25))
-		
+
 
 	def run(self):
 		while not self.done:
