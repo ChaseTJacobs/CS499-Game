@@ -32,11 +32,7 @@ class Player(pygame.sprite.Sprite):
 		self.teleDistance = 75
 		self.tele = 101
 		self.teleCD = 100
-		self.health = 100
-		#self.image = pygame.Surface((30,30)).convert_alpha()
-		#self.image.fill(TRANSPARENT)
-		#self.image.fill([255,0,0])
-		#pygame.draw.rect(self.image,(0,0,0),[20, 20, 20, 20])
+		self.health = 200
 		self.rect = self.image.get_rect(center = self.pos)
 		self.mask = pygame.mask.from_surface(self.image)
 		self.move = [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]
@@ -70,6 +66,7 @@ class Player(pygame.sprite.Sprite):
 		elif self.direction == 315:
 			self.rect.x -= self.teleDistance * .75
 			self.rect.y -= self.teleDistance * .75
+		return (self.rect.x, self.rect.y)
 
 	def set_direction(self,key):
 		print(key)
@@ -136,6 +133,16 @@ class Fireball(pygame.sprite.Sprite):
 		self.rect.x += self.xDir
 		self.rect.y += self.yDir
 		surface.blit(self.image, self.rect)
+		surface.blit(self.image, self.rect)
+		if self.rect.x < -20:
+			return True
+		if self.rect.x > WIDTH + 20:
+			return True
+		if self.rect.y < -20:
+			return True
+		if self.rect.y > HEIGHT + 20:
+			return True
+		return False
 
 class Fireball2(pygame.sprite.Sprite):
 	def __init__(self,pos,color,direction, *groups):
@@ -176,29 +183,46 @@ class Fireball2(pygame.sprite.Sprite):
 		self.rect.x += self.xDir
 		self.rect.y += self.yDir
 		surface.blit(self.image, self.rect)
+		if self.rect.x < -20:
+			return True
+		if self.rect.x > WIDTH + 20:
+			return True
+		if self.rect.y < -20:
+			return True
+		if self.rect.y > HEIGHT + 20:
+			return True
+		return False
 
-
+class Terrain(pygame.sprite.Sprite):
+	def __init__(self,pos,*groups):
+		super(Terrain,self).__init__(*groups)
+		self.pos = pos
+		self.image = pygame.image.load("lava-terrain.png")
+		self.gravel_path = pygame.image.load("gravel-path.png")
+		self.mask = pygame.mask.from_surface(self.gravel_path)
+		self.rect = (0,0, WIDTH, HEIGHT - 100)
+		self.arena = pygame.surface.Surface((WIDTH, HEIGHT - 100))
+		self.stats = pygame.surface.Surface((WIDTH, 100))
+	def draw(self, surface):
+		surface.blit(self.arena, (0, 00))
+		surface.blit(self.stats, (0, HEIGHT - 100))
+		surface.blit(self.image, (0,0))
 
 class Game:
 	def __init__(self):
 		#initializing the display screen and establishing two surfaces: one for playing and
 		#one for player stats and information
 		self.screen = pygame.display.set_mode((WIDTH,HEIGHT), 0, 32)
-		self.arena = pygame.surface.Surface((WIDTH, HEIGHT - 100))
-		self.stats = pygame.surface.Surface((WIDTH, 100))
-		for x in range(200):
-			c = int((x/199.)*255.)
-			red = (c, 0, 0)
-			green = (0, c, 0)
-			blue = (0, 0, c)
-			black = (0,0,0)
-			player1_health = Rect(x, 0, 200, 40)
-			player2_health = Rect(400+x, 0, 200, 40)
-			line_rect = Rect(x, 0, 1, 100)
-			# pygame.draw.rect(self.arena, red, line_rect)
-			pygame.draw.rect(self.stats, black, line_rect)
-			pygame.draw.rect(self.stats, green, player1_health)
-			pygame.draw.rect(self.stats, blue, player2_health)
+
+#		for x in range(800):
+#			c = int((x/799.)*255.)
+#			red = (c, 0, 0)
+#			green = (0, c, 0)
+#			blue = (0, 0, c)
+#			gray = (127,127,127)
+#			line_rect = Rect(x, 0, 1, 100)
+#			pygame.draw.rect(self.arena, red, line_rect)
+#			pygame.draw.rect(self.stats, gray, line_rect)
 
 		#setting up the sprites that we are going to use as our players
 		self.player1 = Player((600,700),"green_hair.png")
@@ -206,9 +230,10 @@ class Game:
 		self.player2.move = [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s]
 
 		#setting the background and creating an inverted mask of the paths
-		self.background = pygame.image.load("lava-terrain.png").convert()
-		self.gravel_path = pygame.image.load("gravel-path.png").convert()
-		self.terrain_mask = pygame.mask.from_surface(self.gravel_path).invert()
+		self.terrain = Terrain((0,0))
+#		self.background = pygame.image.load("lava-terrain.png").convert()
+#		self.gravel_path = pygame.image.load("gravel-path.png").convert()
+#		self.terrain_mask = pygame.mask.from_surface(self.gravel_path).invert()
 
 		self.bullet_group1 = pygame.sprite.Group()
 		self.bullet_group2 = pygame.sprite.Group()
@@ -255,7 +280,11 @@ class Game:
 				self.player2.fBall = 0
 				self.swoosh.play()
 			if key[109] and self.player1.tele > self.player1.teleCD:
-				self.player1.teleport()
+				tempX = self.player1.rect.x + 32
+				tempY = self.player1.rect.y + 32
+				newXY = self.player1.teleport()
+				pygame.draw.line(self.screen, BLUE, (tempX,tempY), (newXY[0] + 32, newXY[1] + 32), 3)
+				pygame.display.update()
 			if key[122] and self.player2.tele > self.player2.teleCD:
 				self.player2.teleport()
 
@@ -386,41 +415,47 @@ class Game:
 				self.player2.frame = 0
 
 	def check_collide(self):
+		dead = False
 		p1Col = pygame.sprite.spritecollide(self.player1,self.bullet_group2,True,pygame.sprite.collide_mask)
 		if p1Col:
 			self.player1.pushX = p1Col[0].xDir
 			self.player1.pushY = p1Col[0].yDir
-			return False
 		p2Col = pygame.sprite.spritecollide(self.player2,self.bullet_group1,True,pygame.sprite.collide_mask)
 		if p2Col:
 			self.player2.pushX = p2Col[0].xDir
 			self.player2.pushY = p2Col[0].yDir
-			return False
 
-		# if (pygame.sprite.collide_mask(self.player1,self.terrain_mask)):
-		# 	self.player1.health -= 2
-		# 	if self.player1.health > 0:
-		# 		return False
-		# 	elif self.player1.health <= 0:
-		# 		return True
-		# elif(pygame.sprite.collide_mask(self.player2,self.terrain_mask)):
-		# 	self.player2.health -= 2
-		# 	if self.player2.health > 0:
-		# 		return False
-		# 	elif self.player2.health <= 0:
-		# 		return True
+		p1Ter = pygame.sprite.collide_mask(self.terrain,self.player1)
+		if p1Ter:
+			self.player1.health += .01
+		else:
+			self.player1.health -= 1
+			if self.player1.health <= 0:
+				dead = True
+
+		p2Ter = pygame.sprite.collide_mask(self.terrain,self.player2)
+		if p2Ter:
+			self.player2.health += .01
+		else:
+			self.player2.health -= 1
+			if self.player2.health <= 0:
+				dead = True
+		return dead
 
 
 	def draw(self):
-		self.screen.blit(self.arena, (0, 00))
-		self.screen.blit(self.stats, (0, HEIGHT - 100))
-		self.arena.blit(self.background, (0,0))
+		self.terrain.draw(self.screen)
 		self.player1.draw(self.screen)
 		self.player2.draw(self.screen)
 		for bullet in self.bullet_group1:
-			bullet.draw(self.screen)
+			if bullet.draw(self.screen):
+				bullet.kill()
 		for bullet2 in self.bullet_group2:
-			bullet2.draw(self.screen)
+			if bullet2.draw(self.screen):
+				bullet2.kill()
+		pygame.draw.rect(self.screen, BLUE, (100,677,self.player1.health,25))
+		pygame.draw.rect(self.screen, RED, (500,677,self.player2.health,25))
+
 
 	def run(self):
 		while not self.done:
