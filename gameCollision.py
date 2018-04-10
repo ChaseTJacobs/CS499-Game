@@ -29,7 +29,7 @@ class Player(pygame.sprite.Sprite):
 		self.facing = "up"
 		self.fBallCD = 25
 		self.fBall = 50
-		self.teleDistance = 75
+		self.teleDistance = 120
 		self.tele = 101
 		self.teleCD = 100
 		self.health = 200
@@ -74,19 +74,19 @@ class Player(pygame.sprite.Sprite):
 	def draw(self,surface):
 		self.frame = (self.frame + self.speed) % 9
 		if self.pushX > 0:
-			self.pushX -= .5
+			self.pushX -= .6
 			if self.pushX < 0:
 				self.pushX = 0
 		if self.pushX < 0:
-			self.pushX += .5
+			self.pushX += .6
 			if self.pushX > 0:
 				self.pushX = 0
 		if self.pushY > 0:
-			self.pushY -= .5
+			self.pushY -= .6
 			if self.pushY < 0:
 				self.pushY = 0
 		if self.pushY < 0:
-			self.pushY += .5
+			self.pushY += .6
 			if self.pushY > 0:
 				self.pushY = 0
 		self.rect.x += self.pushX
@@ -231,9 +231,6 @@ class Game:
 
 		#setting the background and creating an inverted mask of the paths
 		self.terrain = Terrain((0,0))
-#		self.background = pygame.image.load("lava-terrain.png").convert()
-#		self.gravel_path = pygame.image.load("gravel-path.png").convert()
-#		self.terrain_mask = pygame.mask.from_surface(self.gravel_path).invert()
 
 		self.bullet_group1 = pygame.sprite.Group()
 		self.bullet_group2 = pygame.sprite.Group()
@@ -270,13 +267,11 @@ class Game:
 		for event in pygame.event.get():
 			key = pygame.key.get_pressed()
 			if key[32] and self.player1.fBall >= self.player1.fBallCD:
-				Fireball((self.player1.rect.x + 32,self.player1.rect.y + 32),RED,self.player1.direction,self.bullet_group1)
-				print("x: ", self.player1.rect.x)
-				print("y: ", self.player1.rect.y)
+				Fireball((self.player1.rect.x + 32,self.player1.rect.y + 32),BLUE,self.player1.direction,self.bullet_group1)
 				self.player1.fBall = 0
 				self.swoosh.play()
 			if key[304] and self.player2.fBall >= self.player2.fBallCD:
-				Fireball2((self.player2.rect.x + 32,self.player2.rect.y + 32),BLUE,self.player2.direction,self.bullet_group2)
+				Fireball2((self.player2.rect.x + 32,self.player2.rect.y + 32),GREEN,self.player2.direction,self.bullet_group2)
 				self.player2.fBall = 0
 				self.swoosh.play()
 			if key[109] and self.player1.tele > self.player1.teleCD:
@@ -286,7 +281,11 @@ class Game:
 				pygame.draw.line(self.screen, BLUE, (tempX,tempY), (newXY[0] + 32, newXY[1] + 32), 3)
 				pygame.display.update()
 			if key[122] and self.player2.tele > self.player2.teleCD:
-				self.player2.teleport()
+				tempX = self.player2.rect.x + 32
+				tempY = self.player2.rect.y + 32
+				newXY = self.player2.teleport()
+				pygame.draw.line(self.screen, GREEN, (tempX,tempY), (newXY[0] + 32, newXY[1] + 32), 3)
+				pygame.display.update()
 
 #			m = 109
 #			z = 122
